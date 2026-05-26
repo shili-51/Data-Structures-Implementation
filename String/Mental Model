@@ -1,0 +1,111 @@
+1. Core Mental Model — String is just a "managed char array"
+
+MyString object in memory:
+┌─────────────────────────────┐
+│  length = 5                 │  ← how many chars (not counting '\0')
+│  arr ───────────────────────┼──→ [H][e][l][l][o][\0]
+└─────────────────────────────┘     heap allocated block
+
+Two things always true:
+- arr[length] is always '\0'
+- length never counts '\0'
+
+
+2. Every Operation Mental Model
+
+Constructor
+"Hello" literal lives in read-only memory
+You COPY it into your own heap block
+
+read-only: [H][e][l][l][o][\0]
+                 ↓ copy
+your heap:  [H][e][l][l][o][\0]
+            ↑
+           arr points here, length = 5
+
+
+
+
+Append
+BEFORE:
+arr → [H][e][l][l][o][\0]          length = 5
+s   → [!][!][!][\0]                sLen = 3
+
+STEP 1 — allocate new block of size 5+3+1 = 9
+newArr → [_][_][_][_][_][_][_][_][\0]
+
+STEP 2 — copy original
+newArr → [H][e][l][l][o][_][_][_][\0]
+
+STEP 3 — copy new part
+newArr → [H][e][l][l][o][!][!][!][\0]
+
+STEP 4 — free old, point arr to new
+arr → [H][e][l][l][o][!][!][!][\0]   length = 8
+
+
+
+
+operator+
+s1 → [H][i][\0]               length = 2
+s2 → [ ][S][h][i][l][p][y][\0]  length = 7
+
+STEP 1 — allocate res of size 2+7+1 = 10
+STEP 2 — copy s1 into res first
+STEP 3 — copy s2 into res after s1
+res → [H][i][ ][S][h][i][l][p][y][\0]  length = 9
+
+
+
+substring(start, len)
+arr  → [H][e][l][l][o][\0]
+            ↑
+       start=2, len=2
+
+newArr → [l][l][\0]
+          ↑
+         arr[start + i] for i = 0 to len-1
+
+
+
+
+reverse
+BEFORE: [H][e][l][l][o][\0]
+         ↑              ↑
+        left           right
+
+Step1: swap H,o → [o][e][l][l][H][\0]
+Step2: swap e,l → [o][l][l][e][H][\0]
+Step3: left >= right → stop
+
+AFTER:  [o][l][l][e][H][\0]
+
+
+
+Copy Constructor vs Assignment Operator
+SHALLOW COPY (default — dangerous):
+s1.arr ──────────────→ [H][e][l][l][o][\0]
+s2.arr ──────────────↗  (same block!)
+→ when s1 destroyed, s2.arr points to freed memory ❌
+
+DEEP COPY (correct):
+s1.arr ──────────────→ [H][e][l][l][o][\0]
+s2.arr ──────────────→ [H][e][l][l][o][\0]  (own independent block)
+→ each object owns its memory, safe to destroy independently ✅
+
+
+StringBuilder vs Naive concatenation
+NAIVE + in loop:
+step1: [H]                          alloc 1,  copy 1
+step2: [H][i]                       alloc 2,  copy 2
+step3: [H][i][ ]                    alloc 3,  copy 3
+step4: [H][i][ ][S][h][i][l][p][y]  alloc 9,  copy 9
+total copies = 1+2+3+9 = O(n²) ❌
+
+STRINGBUILDER — pre-allocated buffer:
+capacity=4  → [_][_][_][_]
+append "Hi" → [H][i][\0][_]          no realloc
+append " "  → [H][i][ ][\0]          no realloc
+append "Sh" → capacity full → double to 8
+            → [H][i][ ][S][h][\0][_][_]
+total copies = O(n) amortized ✅

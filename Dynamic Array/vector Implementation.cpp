@@ -10,7 +10,8 @@ Implement a resize(n) method and a clear() method
 using namespace std;
 
 class dynamicArray {
-    int *arr;
+    // A pointer to the first element of a heap-allocated block behaves exactly like an array.
+    int *arr;  
     int sz;
     int cap;
 
@@ -43,13 +44,15 @@ public:
         return arr[--sz];
     }
 
+// Why & (reference return):
+// Returning by reference means the caller gets the actual memory location, not a copy. This enables:
     int& operator[](int index) {
         if (index < 0 || index >= sz)
             throw std::out_of_range("Index out of range");
         return arr[index];
     }
 
-    int getSize() const {
+    int getSize() const {  // const after a method means "this method will not modify the object."
         return sz;
     }
 
@@ -58,6 +61,8 @@ public:
     }
 
     void resize(int n) {
+        if (n < 0)
+            throw std::invalid_argument("Size cannot be negative");
         if (n > cap) {
             int newCap = cap;
             while (newCap < n)

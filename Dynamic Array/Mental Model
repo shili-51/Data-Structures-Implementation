@@ -1,0 +1,16 @@
+1. STORAGE
+   Raw heap pointer (int* arr) — mimics array using pointer arithmetic
+   new int[cap] allocates, delete[] arr frees it
+
+2. GROWTH STRATEGY
+   When full (sz == cap) — double the capacity
+   Allocate new block → copy old data → free old block → point to new
+   This gives O(1) amortized push_back
+
+3. BOUNDS SAFETY
+   operator[] throws out_of_range for invalid index
+   pop_back throws if empty
+
+4. CONST CORRECTNESS
+   Getters marked const — safe to call on const references
+   operator[] returns reference — enables da[i] = value syntax

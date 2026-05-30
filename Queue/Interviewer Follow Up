@@ -1,0 +1,26 @@
+Why is a circular buffer more cache-friendly than a linked-list queue?
+
+A circular buffer is more cache-friendly because its elements are stored next to each other in memory, while a linked list stores elements at random memory locations.
+
+Circular Buffer
+[10][20][30][40][50]
+
+When the CPU loads 10, it often loads 20, 30, 40, etc. into cache at the same time.
+
+✅ Fewer cache misses
+✅ Faster memory access
+
+Linked List
+10 -> 20 -> 30 -> 40
+
+The nodes might be stored like:
+
+10 @ address 1000
+20 @ address 50000
+30 @ address 2000
+40 @ address 90000
+
+The CPU must jump around memory to find the next node.
+
+❌ More cache misses
+❌ Slower memory access
